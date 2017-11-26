@@ -2,7 +2,9 @@
 using System.Linq;
 using System.Collections.Generic;
 using Newtonsoft.Json;
+using Swashbuckle.AspNetCore.OpenAPIGen.Model;
 using Swashbuckle.AspNetCore.OpenAPIGen.Model.Info;
+using Swashbuckle.AspNetCore.OpenAPIGen.Model.Security;
 using Xunit;
 using Swashbuckle.AspNetCore.Swagger;
 using Swashbuckle.AspNetCore.SwaggerGen;
@@ -146,29 +148,29 @@ namespace Swashbuckle.AspNetCore.OpenAPIGen.Test
             Assert.Null(operation.Parameters);
         }
 
-        //[Theory]
-        //[InlineData("collection/{param}", nameof(FakeActions.AcceptsStringFromRoute), "path")]
-        //[InlineData("collection", nameof(FakeActions.AcceptsStringFromQuery), "query")]
-        //[InlineData("collection", nameof(FakeActions.AcceptsStringFromHeader), "header")]
-        //[InlineData("collection", nameof(FakeActions.AcceptsStringFromForm), "formData")]
-        //[InlineData("collection", nameof(FakeActions.AcceptsStringFromQuery), "query")]
-        //public void GetSwagger_GeneratesNonBodyParameters_ForPathQueryHeaderOrFormBoundParams(
-        //    string routeTemplate,
-        //    string actionFixtureName,
-        //    string expectedIn)
-        //{
-        //    var subject = Subject(setupApis: apis => apis.Add("GET", routeTemplate, actionFixtureName));
+        [Theory]
+        [InlineData("collection/{param}", nameof(FakeActions.AcceptsStringFromRoute), ParameterLocation.Path, "simple", false)]
+        [InlineData("collection", nameof(FakeActions.AcceptsStringFromQuery), ParameterLocation.Query, "form", true)]
+        [InlineData("collection", nameof(FakeActions.AcceptsStringFromHeader), ParameterLocation.Header, "simple", false)]
+        public void GetSwagger_GeneratesParameters_ForPathQueryHeaderParams(
+            string routeTemplate,
+            string actionFixtureName,
+            ParameterLocation expectedIn,
+            string style,
+            bool isExplode)
+        {
+            var subject = Subject(setupApis: apis => apis.Add("GET", routeTemplate, actionFixtureName));
 
-        //    var swagger = subject.GetSwagger("v1");
+            var swagger = subject.GetSwagger("v1");
 
-        //    var param = swagger.Paths["/" + routeTemplate].Get.Parameters.First();
-        //    Assert.IsAssignableFrom<NonBodyParameter>(param);
-        //    var nonBodyParam = param as NonBodyParameter;
-        //    Assert.NotNull(nonBodyParam);
-        //    Assert.Equal("param", nonBodyParam.Name);
-        //    Assert.Equal(expectedIn, nonBodyParam.In);
-        //    Assert.Equal("string", nonBodyParam.Type);
-        //}
+            var param = swagger.Paths["/" + routeTemplate].Get.Parameters.First();
+            Assert.IsAssignableFrom<Parameter>(param);
+            Assert.NotNull(param);
+            Assert.Equal("param", param.Name);
+            Assert.Equal(expectedIn, param.In);
+            Assert.Equal(style, param.Style);
+            Assert.Equal(isExplode, param.Explode);
+        }
 
         //[Fact]
         //public void GetSwagger_SetsCollectionFormatMulti_ForQueryOrHeaderBoundArrayParams()
@@ -200,21 +202,21 @@ namespace Swashbuckle.AspNetCore.OpenAPIGen.Test
         //    Assert.Contains("ComplexType", swagger.Definitions.Keys);
         //}
 
-        //[Fact]
-        //public void GetSwagger_GeneratesQueryParams_ForAllUnboundParams()
-        //{
-        //    var subject = Subject(setupApis: apis => apis
-        //        .Add("GET", "collection", nameof(FakeActions.AcceptsUnboundStringParameter))
-        //        .Add("POST", "collection", nameof(FakeActions.AcceptsUnboundComplexParameter)));
+        [Fact]
+        public void GetSwagger_GeneratesQueryParams_ForAllUnboundParams()
+        {
+            var subject = Subject(setupApis: apis => apis
+                .Add("GET", "collection", nameof(FakeActions.AcceptsUnboundStringParameter))
+                .Add("POST", "collection", nameof(FakeActions.AcceptsUnboundComplexParameter)));
 
-        //    var swagger = subject.GetSwagger("v1");
+            var swagger = subject.GetSwagger("v1");
 
-        //    var getParam = swagger.Paths["/collection"].Get.Parameters.First();
-        //    Assert.Equal("query", getParam.In);
-        //    // Multiple post parameters as ApiExplorer flattens out the complex type
-        //    var postParams = swagger.Paths["/collection"].Post.Parameters;
-        //    Assert.All(postParams, (p) => Assert.Equal("query", p.In));
-        //}
+            var getParam = swagger.Paths["/collection"].Get.Parameters.First();
+            Assert.Equal(ParameterLocation.Query, getParam.In);
+            // Multiple post parameters as ApiExplorer flattens out the complex type
+            var postParams = swagger.Paths["/collection"].Post.Parameters;
+            Assert.All(postParams, (p) => Assert.Equal(ParameterLocation.Query, p.In));
+        }
 
         [Theory]
         [InlineData("collection/{param}")]
@@ -261,21 +263,20 @@ namespace Swashbuckle.AspNetCore.OpenAPIGen.Test
             Assert.Equal(expectedRequired, param.Required);
         }
 
-        //[Fact]
-        //public void GetSwagger_SetsParameterTypeString_ForUnboundRouteParams()
-        //{
-        //    var subject = Subject(setupApis: apis => apis
-        //        .Add("GET", "collection/{param}", nameof(FakeActions.AcceptsNothing)));
+        [Fact]
+        public void GetSwagger_SetsParameterTypeString_ForUnboundRouteParams()
+        {
+            var subject = Subject(setupApis: apis => apis
+                .Add("GET", "collection/{param}", nameof(FakeActions.AcceptsNothing)));
 
-        //    var swagger = subject.GetSwagger("v1");
+            var swagger = subject.GetSwagger("v1");
 
-        //    var param = swagger.Paths["/collection/{param}"].Get.Parameters.First();
-        //    Assert.IsAssignableFrom<NonBodyParameter>(param);
-        //    var nonBodyParam = param as NonBodyParameter;
-        //    Assert.Equal("param", nonBodyParam.Name);
-        //    Assert.Equal("path", nonBodyParam.In);
-        //    Assert.Equal("string", nonBodyParam.Type);
-        //}
+            var param = swagger.Paths["/collection/{param}"].Get.Parameters.First();
+            Assert.IsAssignableFrom<Parameter>(param);
+            Assert.Equal("param", param.Name);
+            Assert.Equal(ParameterLocation.Path, param.In);
+            Assert.Equal("simple", param.Style);
+        }
 
         [Fact]
         public void GetSwagger_IgnoresParameters_IfPartOfCancellationToken()
@@ -289,24 +290,24 @@ namespace Swashbuckle.AspNetCore.OpenAPIGen.Test
             Assert.Null(operation.Parameters);
         }
 
-        //[Fact]
-        //public void GetSwagger_DescribesParametersInCamelCase_IfSpecifiedBySettings()
-        //{
-        //    var subject = Subject(
-        //        setupApis: apis => apis.Add("GET", "collection", nameof(FakeActions.AcceptsComplexTypeFromQuery)),
-        //        configure: c => c.DescribeAllParametersInCamelCase = true
-        //    );
+        [Fact]
+        public void GetSwagger_DescribesParametersInCamelCase_IfSpecifiedBySettings()
+        {
+            var subject = Subject(
+                setupApis: apis => apis.Add("GET", "collection", nameof(FakeActions.AcceptsComplexTypeFromQuery)),
+                configure: c => c.DescribeAllParametersInCamelCase = true
+            );
 
-        //    var swagger = subject.GetSwagger("v1");
+            var swagger = subject.GetSwagger("v1");
 
-        //    var operation = swagger.Paths["/collection"].Get;
-        //    Assert.Equal(5, operation.Parameters.Count);
-        //    Assert.Equal("property1", operation.Parameters[0].Name);
-        //    Assert.Equal("property2", operation.Parameters[1].Name);
-        //    Assert.Equal("property3", operation.Parameters[2].Name);
-        //    Assert.Equal("property4", operation.Parameters[3].Name);
-        //    Assert.Equal("property5", operation.Parameters[4].Name);
-        //}
+            var operation = swagger.Paths["/collection"].Get;
+            Assert.Equal(5, operation.Parameters.Count);
+            Assert.Equal("property1", operation.Parameters[0].Name);
+            Assert.Equal("property2", operation.Parameters[1].Name);
+            Assert.Equal("property3", operation.Parameters[2].Name);
+            Assert.Equal("property4", operation.Parameters[3].Name);
+            Assert.Equal("property5", operation.Parameters[4].Name);
+        }
 
         //[Theory]
         //[InlineData(nameof(FakeActions.ReturnsVoid), "200", "Success", false)]
@@ -383,81 +384,90 @@ namespace Swashbuckle.AspNetCore.OpenAPIGen.Test
             Assert.True(operation.Deprecated);
         }
 
-        //[Fact]
-        //public void GetSwagger_GeneratesBasicAuthSecurityDefinition_IfSpecifiedBySettings()
-        //{
-        //    var subject = Subject(configure: c =>
-        //        c.SecurityDefinitions.Add("basic", new BasicAuthScheme
-        //        {
-        //            Type = "basic",
-        //            Description = "Basic HTTP Authentication"
-        //        }));
+        [Fact]
+        public void GetSwagger_GeneratesBasicAuthSecurityDefinition_IfSpecifiedBySettings()
+        {
+            var subject = Subject(configure: c =>
+                c.SecurityDefinitions.Add("basic", new HttpSecurityScheme
+                {
+                    Type = "basic",
+                    Description = "Basic HTTP Authentication"
+                }));
 
-        //    var swagger = subject.GetSwagger("v1");
+            var swagger = subject.GetSwagger("v1");
 
-        //    Assert.Contains("basic", swagger.SecurityDefinitions.Keys);
-        //    var scheme = swagger.SecurityDefinitions["basic"];
-        //    Assert.Equal("basic", scheme.Type);
-        //    Assert.Equal("Basic HTTP Authentication", scheme.Description);
-        //}
+            Assert.Contains("basic", swagger.Components.SecuritySchemes.Keys);
+            var scheme = swagger.Components.SecuritySchemes["basic"];
+            Assert.Equal("basic", scheme.Type);
+            Assert.Equal("Basic HTTP Authentication", scheme.Description);
+        }
 
-        //[Fact]
-        //public void GetSwagger_GeneratesApiKeySecurityDefinition_IfSpecifiedBySettings()
-        //{
-        //    var subject = Subject(configure: c =>
-        //        c.SecurityDefinitions.Add("apiKey", new ApiKeyScheme
-        //        {
-        //            Type = "apiKey",
-        //            Description = "API Key Authentication",
-        //            Name = "apiKey",
-        //            In = "header"
-        //        }));
+        [Fact]
+        public void GetSwagger_GeneratesApiKeySecurityDefinition_IfSpecifiedBySettings()
+        {
+            var subject = Subject(configure: c =>
+                c.SecurityDefinitions.Add("apiKey", new ApiKeySecurityScheme
+                {
+                    Type = "apiKey",
+                    Description = "API Key Authentication",
+                    Name = "apiKey",
+                    In = "header"
+                }));
 
-        //    var swagger = subject.GetSwagger("v1");
+            var swagger = subject.GetSwagger("v1");
 
-        //    Assert.Contains("apiKey", swagger.SecurityDefinitions.Keys);
-        //    var scheme = swagger.SecurityDefinitions["apiKey"];
-        //    Assert.IsAssignableFrom<ApiKeyScheme>(scheme);
-        //    var apiKeyScheme = scheme as ApiKeyScheme;
-        //    Assert.Equal("apiKey", apiKeyScheme.Type);
-        //    Assert.Equal("API Key Authentication", apiKeyScheme.Description);
-        //    Assert.Equal("apiKey", apiKeyScheme.Name);
-        //    Assert.Equal("header", apiKeyScheme.In);
-        //}
+            Assert.Contains("apiKey", swagger.Components.SecuritySchemes.Keys);
+            var scheme = swagger.Components.SecuritySchemes["apiKey"];
+            Assert.IsAssignableFrom<ApiKeySecurityScheme>(scheme);
+            var apiKeyScheme = scheme as ApiKeySecurityScheme;
+            Assert.Equal("apiKey", apiKeyScheme.Type);
+            Assert.Equal("API Key Authentication", apiKeyScheme.Description);
+            Assert.Equal("apiKey", apiKeyScheme.Name);
+            Assert.Equal("header", apiKeyScheme.In);
+        }
 
-        //[Fact]
-        //public void GetSwagger_GeneratesOAuthSecurityDefinition_IfSpecifiedBySettings()
-        //{
-        //    var subject = Subject(configure: c =>
-        //        c.SecurityDefinitions.Add("oauth2", new OAuth2Scheme
-        //        {
-        //            Type = "oauth2",
-        //            Description = "OAuth2 Authorization Code Grant",
-        //            Flow = "accessCode",
-        //            AuthorizationUrl = "https://tempuri.org/auth",
-        //            TokenUrl = "https://tempuri.org/token",
-        //            Scopes = new Dictionary<string, string>
-        //            {
-        //                { "read", "Read access to protected resources" },
-        //                { "write", "Write access to protected resources" }
-        //            }
-        //        }));
+        [Fact]
+        public void GetSwagger_GeneratesOAuthSecurityDefinition_IfSpecifiedBySettings()
+        {
+            var subject = Subject(configure: c =>
+            {
+                c.SecurityDefinitions.Add("oauth2", new OAuth2SecurityScheme
+                {
+                    Description = "OAuth2 Authorization Code Grant",
+                    Flow = new Dictionary<string, OAuth2SecurityScheme.OAuth2Flow>
+                    {
+                        ["authorizationCode"] = new OAuth2SecurityScheme.AuthorizationCode
+                        {
+                            AuthorizationUrl = "https://tempuri.org/auth",
+                            TokenUrl = "https://tempuri.org/token",
+                            Scopes = new Dictionary<string, string>
+                            {
+                                ["read"] = "Read access to protected resources",
+                                ["write"] = "Write access to protected resources",
+                            },
+                        }
+                    }
+                });
+            });
 
-        //    var swagger = subject.GetSwagger("v1");
+            var swagger = subject.GetSwagger("v1");
 
-        //    Assert.Contains("oauth2", swagger.SecurityDefinitions.Keys);
-        //    var scheme = swagger.SecurityDefinitions["oauth2"];
-        //    Assert.IsAssignableFrom<OAuth2Scheme>(scheme);
-        //    var oAuth2Scheme = scheme as OAuth2Scheme;
-        //    Assert.Equal("oauth2", oAuth2Scheme.Type);
-        //    Assert.Equal("OAuth2 Authorization Code Grant", oAuth2Scheme.Description);
-        //    Assert.Equal("accessCode", oAuth2Scheme.Flow);
-        //    Assert.Equal("https://tempuri.org/auth", oAuth2Scheme.AuthorizationUrl);
-        //    Assert.Equal("https://tempuri.org/token", oAuth2Scheme.TokenUrl);
-        //    Assert.Equal(new[] { "read", "write" }, oAuth2Scheme.Scopes.Keys.ToArray());
-        //    Assert.Equal("Read access to protected resources", oAuth2Scheme.Scopes["read"]);
-        //    Assert.Equal("Write access to protected resources", oAuth2Scheme.Scopes["write"]);
-        //}
+            Assert.Contains("oauth2", swagger.Components.SecuritySchemes.Keys);
+            var scheme = swagger.Components.SecuritySchemes["oauth2"];
+            Assert.IsAssignableFrom<OAuth2SecurityScheme>(scheme);
+            var oAuth2Scheme = scheme as OAuth2SecurityScheme;
+            Assert.NotNull(oAuth2Scheme);
+            Assert.Equal("oauth2", oAuth2Scheme.Type);
+            Assert.Equal("OAuth2 Authorization Code Grant", oAuth2Scheme.Description);
+            Assert.True(oAuth2Scheme.Flow.ContainsKey("authorizationCode"));
+            Assert.IsAssignableFrom<OAuth2SecurityScheme.AuthorizationCode>(oAuth2Scheme.Flow["authorizationCode"]);
+            var authorizationCode = (OAuth2SecurityScheme.AuthorizationCode)oAuth2Scheme.Flow["authorizationCode"];
+            Assert.Equal("https://tempuri.org/auth", authorizationCode.AuthorizationUrl);
+            Assert.Equal("https://tempuri.org/token", authorizationCode.TokenUrl);
+            Assert.Equal(new[] { "read", "write" }, authorizationCode.Scopes.Keys.ToArray());
+            Assert.Equal("Read access to protected resources", authorizationCode.Scopes["read"]);
+            Assert.Equal("Write access to protected resources", authorizationCode.Scopes["write"]);
+        }
 
         [Fact]
         public void GetSwagger_IgnoresObsoleteActions_IfSpecifiedBySettings()

@@ -116,7 +116,7 @@ namespace Swashbuckle.AspNetCore.OpenAPIGen.Model
 
         public string OperationId { get; set; }
 
-        public IEnumerable<Parameter> Parameters { get; set; }
+        public IReadOnlyList<Parameter> Parameters { get; set; }
 
         public RequestBody RequestBody { get; set; }
 
