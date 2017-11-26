@@ -63,6 +63,6 @@ namespace Swashbuckle.AspNetCore.OpenAPIGen.Model.Security
         /// <summary>
         /// An object containing configuration information for the flow types supported.
         /// </summary>
-        public IEnumerable<OAuth2Flow> Flows { get; set; }
+        public IDictionary<string, OAuth2Flow> Flow { get; set; }
     }
 }

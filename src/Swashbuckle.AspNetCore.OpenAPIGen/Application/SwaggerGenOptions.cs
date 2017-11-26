@@ -16,12 +16,12 @@ namespace Swashbuckle.AspNetCore.SwaggerGen
     public class SwaggerGenOptions
     {
         private readonly SwaggerGeneratorSettings _swaggerGeneratorSettings;
-        //private readonly SchemaRegistrySettings _schemaRegistrySettings;
+        private readonly SchemaRegistrySettings _schemaRegistrySettings;
 
         private IList<Func<XPathDocument>> _xmlDocFactories;
         //private List<FilterDescriptor<IOperationFilter>> _operationFilterDescriptors;
         //private List<FilterDescriptor<IDocumentFilter>> _documentFilterDescriptors;
-        //private List<FilterDescriptor<ISchemaFilter>> _schemaFilterDescriptors;
+        private List<FilterDescriptor<ISchemaFilter>> _schemaFilterDescriptors;
 
         private struct FilterDescriptor<TFilter>
         {
@@ -32,12 +32,12 @@ namespace Swashbuckle.AspNetCore.SwaggerGen
         public SwaggerGenOptions()
         {
             _swaggerGeneratorSettings = new SwaggerGeneratorSettings();
-            //_schemaRegistrySettings = new SchemaRegistrySettings();
+            _schemaRegistrySettings = new SchemaRegistrySettings();
 
             _xmlDocFactories = new List<Func<XPathDocument>>();
             //_operationFilterDescriptors = new List<FilterDescriptor<IOperationFilter>>();
             //_documentFilterDescriptors = new List<FilterDescriptor<IDocumentFilter>>();
-            //_schemaFilterDescriptors = new List<FilterDescriptor<ISchemaFilter>>();
+            _schemaFilterDescriptors = new List<FilterDescriptor<ISchemaFilter>>();
 
             // Enable Annotations
             //OperationFilter<SwaggerAttributesOperationFilter>();
@@ -233,7 +233,7 @@ namespace Swashbuckle.AspNetCore.SwaggerGen
         internal ISwaggerProvider CreateSwaggerProvider(IServiceProvider serviceProvider)
         {
             var swaggerGeneratorSettings = CreateSwaggerGeneratorSettings(serviceProvider);
-            //var schemaRegistrySettings = CreateSchemaRegistrySettings(serviceProvider);
+            var schemaRegistrySettings = CreateSchemaRegistrySettings(serviceProvider);
 
             // Instantiate & add the XML comments filters here so they're executed before any custom
             // filters AND so they can share the same XPathDocument (perf. optimization)
@@ -244,28 +244,29 @@ namespace Swashbuckle.AspNetCore.SwaggerGen
             //    schemaRegistrySettings.SchemaFilters.Insert(0, new XmlCommentsSchemaFilter(xmlDoc));
             //}
 
-            //var schemaRegistryFactory = new SchemaRegistryFactory(
-            //    serviceProvider.GetRequiredService<IOptions<MvcJsonOptions>>().Value.SerializerSettings,
-            //    default(SchemaR)
-            //);
+            var schemaRegistryFactory = new SchemaRegistryFactory(
+                serviceProvider.GetRequiredService<IOptions<MvcJsonOptions>>().Value.SerializerSettings,
+                schemaRegistrySettings
+            );
 
             return new SwaggerGenerator(
                 serviceProvider.GetRequiredService<IApiDescriptionGroupCollectionProvider>(),
+                schemaRegistryFactory,
                 swaggerGeneratorSettings
             );
         }
 
-        //private SchemaRegistrySettings CreateSchemaRegistrySettings(IServiceProvider serviceProvider)
-        //{
-        //    var settings = _schemaRegistrySettings.Clone();
+        private SchemaRegistrySettings CreateSchemaRegistrySettings(IServiceProvider serviceProvider)
+        {
+            var settings = _schemaRegistrySettings.Clone();
 
-        //    foreach (var filter in CreateFilters(_schemaFilterDescriptors, serviceProvider))
-        //    {
-        //        settings.SchemaFilters.Add(filter);
-        //    }
+            foreach (var filter in CreateFilters(_schemaFilterDescriptors, serviceProvider))
+            {
+                settings.SchemaFilters.Add(filter);
+            }
 
-        //    return settings;
-        //}
+            return settings;
+        }
 
         private SwaggerGeneratorSettings CreateSwaggerGeneratorSettings(IServiceProvider serviceProvider)
         {

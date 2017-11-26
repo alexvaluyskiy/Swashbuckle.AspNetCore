@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Swashbuckle.AspNetCore.OpenAPIGen.Model;
 using Swashbuckle.AspNetCore.OpenAPIGen.Model.Info;
+using Swashbuckle.AspNetCore.OpenAPIGen.Model.Security;
 using Swashbuckle.AspNetCore.Swagger;
 
 namespace Swashbuckle.AspNetCore.SwaggerGen
@@ -13,16 +14,16 @@ namespace Swashbuckle.AspNetCore.SwaggerGen
     public class SwaggerGenerator : ISwaggerProvider
     {
         private readonly IApiDescriptionGroupCollectionProvider _apiDescriptionsProvider;
-        //private readonly ISchemaRegistryFactory _schemaRegistryFactory;
+        private readonly ISchemaRegistryFactory _schemaRegistryFactory;
         private readonly SwaggerGeneratorSettings _settings;
 
         public SwaggerGenerator(
             IApiDescriptionGroupCollectionProvider apiDescriptionsProvider,
-            //ISchemaRegistryFactory schemaRegistryFactory,
+            ISchemaRegistryFactory schemaRegistryFactory,
             SwaggerGeneratorSettings settings = null)
         {
             _apiDescriptionsProvider = apiDescriptionsProvider;
-            //_schemaRegistryFactory = schemaRegistryFactory;
+            _schemaRegistryFactory = schemaRegistryFactory;
             _settings = settings ?? new SwaggerGeneratorSettings();
         }
 
@@ -32,7 +33,7 @@ namespace Swashbuckle.AspNetCore.SwaggerGen
             string basePath = null,
             string[] schemes = null)
         {
-            //var schemaRegistry = _schemaRegistryFactory.Create();
+            var schemaRegistry = _schemaRegistryFactory.Create();
 
             Info info;
             if (!_settings.SwaggerDocs.TryGetValue(documentName, out info))
@@ -46,23 +47,21 @@ namespace Swashbuckle.AspNetCore.SwaggerGen
 
             var paths = apiDescriptions
                 .GroupBy(apiDesc => apiDesc.RelativePathSansQueryString())
-                .ToDictionary(group => "/" + group.Key, group => CreatePathItem(group, null));
+                .ToDictionary(group => "/" + group.Key, group => CreatePathItem(group, schemaRegistry));
 
             var servers = new List<Server>
             {
                 new Server { Url = host }
             };
 
+            var components = GetComponents(_settings.SecurityDefinitions, schemaRegistry);
+
             var swaggerDoc = new OpenApiDocument
             {
                 Info = info,
                 Servers = servers,
-                //Host = host,
-                //BasePath = basePath,
-                //Schemes = schemes,
+                Components = components,
                 Paths = paths,
-                //Definitions = schemaRegistry.Definitions,
-                //SecurityDefinitions = _settings.SecurityDefinitions
             };
 
             //var filterContext = new DocumentFilterContext(
@@ -77,7 +76,15 @@ namespace Swashbuckle.AspNetCore.SwaggerGen
             return swaggerDoc;
         }
 
-        private PathItem CreatePathItem(IEnumerable<ApiDescription> apiDescriptions, object schemaRegistry)
+        private Components GetComponents(IDictionary<string, SecurityScheme> securitySchemes, ISchemaRegistry schemaRegistry)
+        {
+            var components = new Components();
+            components.SecuritySchemes = securitySchemes;
+            components.Schemas = schemaRegistry.Definitions;
+            return components;
+        }
+
+        private PathItem CreatePathItem(IEnumerable<ApiDescription> apiDescriptions, ISchemaRegistry schemaRegistry)
         {
             var pathItem = new PathItem();
 
@@ -90,18 +97,14 @@ namespace Swashbuckle.AspNetCore.SwaggerGen
                 var httpMethod = group.Key;
 
                 if (httpMethod == null)
-                    throw new NotSupportedException(string.Format(
-                        "Ambiguous HTTP method for action - {0}. " +
-                        "Actions require an explicit HttpMethod binding for Swagger",
-                        group.First().ActionDescriptor.DisplayName));
+                    throw new NotSupportedException(
+                        $"Ambiguous HTTP method for action - {group.First().ActionDescriptor.DisplayName}. " +
+                        "Actions require an explicit HttpMethod binding for Swagger");
 
                 if (group.Count() > 1)
-                    throw new NotSupportedException(string.Format(
-                        "HTTP method \"{0}\" & path \"{1}\" overloaded by actions - {2}. " +
-                        "Actions require unique method/path combination for Swagger",
-                        httpMethod,
-                        group.First().RelativePathSansQueryString(),
-                        string.Join(",", group.Select(apiDesc => apiDesc.ActionDescriptor.DisplayName))));
+                    throw new NotSupportedException(
+                        $"HTTP method \"{httpMethod}\" & path \"{@group.First().RelativePathSansQueryString()}\" overloaded by actions - {string.Join(",", group.Select(apiDesc => apiDesc.ActionDescriptor.DisplayName))}. " +
+                        "Actions require unique method/path combination for Swagger");
 
                 var apiDescription = group.Single();
 
@@ -137,7 +140,7 @@ namespace Swashbuckle.AspNetCore.SwaggerGen
             return pathItem;
         }
 
-        private Operation CreateOperation(ApiDescription apiDescription, object schemaRegistry)
+        private Operation CreateOperation(ApiDescription apiDescription, ISchemaRegistry schemaRegistry)
         {
             var parameters = apiDescription.ParameterDescriptions
                 .Where(paramDesc => paramDesc.Source != BindingSource.Body || paramDesc.Source != BindingSource.Form)
@@ -156,18 +159,16 @@ namespace Swashbuckle.AspNetCore.SwaggerGen
             {
                 Tags = new[] { _settings.TagSelector(apiDescription) },
                 OperationId = apiDescription.FriendlyId(),
-                //Consumes = apiDescription.SupportedRequestMediaTypes().ToList(),
-                //Produces = apiDescription.SupportedResponseMediaTypes().ToList(),
                 Parameters = parameters.Any() ? parameters : null, // parameters can be null but not empty
                 Responses = responses,
                 Deprecated = apiDescription.IsObsolete() ? true : (bool?)null
             };
 
-            //var filterContext = new OperationFilterContext(apiDescription, schemaRegistry);
-            //foreach (var filter in _settings.OperationFilters)
-            //{
-            //    filter.Apply(operation, filterContext);
-            //}
+            var filterContext = new OperationFilterContext(apiDescription, schemaRegistry);
+            foreach (var filter in _settings.OperationFilters)
+            {
+                filter.Apply(operation, filterContext);
+            }
 
             return operation;
         }
@@ -175,7 +176,7 @@ namespace Swashbuckle.AspNetCore.SwaggerGen
         private Parameter CreateParameter(
             ApiDescription apiDescription,
             ApiParameterDescription paramDescription,
-            object schemaRegistry)
+            ISchemaRegistry schemaRegistry)
         {
             ParameterLocation GetParameterLocation(ApiParameterDescription param)
             {
@@ -214,7 +215,7 @@ namespace Swashbuckle.AspNetCore.SwaggerGen
                 ? paramDescription.Name.ToCamelCase()
                 : paramDescription.Name;
 
-            //var schema = (paramDescription.Type == null) ? null : schemaRegistry.GetOrRegister(paramDescription.Type);
+            var schema = (paramDescription.Type == null) ? null : schemaRegistry.GetOrRegister(paramDescription.Type);
             //if (location == "body")
             //{
             //    return new Parameter

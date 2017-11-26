@@ -1,7 +1,7 @@
 ﻿namespace Swashbuckle.AspNetCore.SwaggerGen
 {
-    //public interface ISchemaRegistryFactory
-    //{
-    //    ISchemaRegistry Create();
-    //}
+    public interface ISchemaRegistryFactory
+    {
+        ISchemaRegistry Create();
+    }
 }

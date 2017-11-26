@@ -17,10 +17,13 @@ namespace Swashbuckle.AspNetCore.OpenAPIGen.Model
 
         public Components Components { get; set; }
 
+        // TODO: this property is not used
         public object Security { get; set; }
 
+        // TODO: this property is not used
         public IEnumerable<object> Tags { get; set; }
 
+        // TODO: this property is not used
         public IEnumerable<object> ExternalDocs { get; set; }
     }
 
@@ -44,22 +47,30 @@ namespace Swashbuckle.AspNetCore.OpenAPIGen.Model
 
     public sealed class Components
     {
+        // TODO: this property is not used
         public IDictionary<string, Schema> Schemas { get; set; }
 
+        // TODO: this property is not used
         public IDictionary<string, Response> Responses { get; set; }
 
+        // TODO: this property is not used
         public IDictionary<string, Parameter> Parameters { get; set; }
 
+        // TODO: this property is not used
         public IDictionary<string, object> Examples { get; set; }
 
+        // TODO: this property is not used
         public IDictionary<string, RequestBody> RequestBodies { get; set; }
 
+        // TODO: this property is not used
         public IDictionary<string, object> Headers { get; set; }
 
         public IDictionary<string, SecurityScheme> SecuritySchemes { get; set; }
 
+        // TODO: this property is not used
         public IDictionary<string, object> Links { get; set; }
 
+        // TODO: this property is not used
         public IDictionary<string, object> Callbacks { get; set; }
     }
 
@@ -229,9 +240,9 @@ namespace Swashbuckle.AspNetCore.OpenAPIGen.Model
 
         public int? MinProperties { get; set; }
 
-        public IList<string> Required { get; set; }
+        public IEnumerable<string> Required { get; set; }
 
-        public IList<object> Enum { get; set; }
+        public IEnumerable<object> Enum { get; set; }
 
         public string Type { get; set; }
 
