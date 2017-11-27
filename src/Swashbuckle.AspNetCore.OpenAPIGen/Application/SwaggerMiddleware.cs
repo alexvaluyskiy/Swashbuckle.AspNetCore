@@ -75,7 +75,7 @@ namespace Swashbuckle.AspNetCore.Swagger
             response.StatusCode = 200;
             response.ContentType = "application/json";
 
-            using (var writer = new StreamWriter(response.Body, Encoding.UTF8, 1024, true))
+            using (var writer = new StreamWriter(response.Body, System.Text.Encoding.UTF8, 1024, true))
             {
                 _swaggerSerializer.Serialize(writer, swagger);
             }

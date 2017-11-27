@@ -1,12 +1,7 @@
 ﻿using System;
-using System.Linq;
-using System.Collections.Generic;
 using Newtonsoft.Json;
-using Swashbuckle.AspNetCore.OpenAPIGen.Model;
 using Swashbuckle.AspNetCore.OpenAPIGen.Model.Info;
-using Swashbuckle.AspNetCore.OpenAPIGen.Model.Security;
 using Xunit;
-using Swashbuckle.AspNetCore.Swagger;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace Swashbuckle.AspNetCore.OpenAPIGen.Test
@@ -28,6 +23,35 @@ namespace Swashbuckle.AspNetCore.OpenAPIGen.Test
 
             Assert.Equal(new[] { "collection1" }, swagger.Paths["/collection1"].Get.Tags);
             Assert.Equal(new[] { "collection2" }, swagger.Paths["/collection2"].Get.Tags);
+        }
+
+        [Theory]
+        [InlineData("api/products", "ApiProductsGet")]
+        [InlineData("addresses/validate", "AddressesValidateGet")]
+        [InlineData("carts/{cartId}/items/{id}", "CartsByCartIdItemsByIdGet")]
+        public void GetSwagger_GeneratesOperationIds_AccordingToRouteTemplateAndHttpMethod(
+            string routeTemplate,
+            string expectedOperationId
+        )
+        {
+            var subject = Subject(setupApis: apis => apis
+                .Add("GET", routeTemplate, nameof(FakeActions.AcceptsNothing)));
+
+            var swagger = subject.GetSwagger("v1");
+
+            Assert.Equal(expectedOperationId, swagger.Paths["/" + routeTemplate].Get.OperationId);
+        }
+
+        [Fact]
+        public void GetSwagger_SetsDeprecated_IfActionsMarkedObsolete()
+        {
+            var subject = Subject(setupApis: apis => apis
+                .Add("GET", "collection", nameof(FakeActions.MarkedObsolete)));
+
+            var swagger = subject.GetSwagger("v1");
+
+            var operation = swagger.Paths["/collection"].Get;
+            Assert.True(operation.Deprecated);
         }
 
         private SwaggerGenerator Subject(

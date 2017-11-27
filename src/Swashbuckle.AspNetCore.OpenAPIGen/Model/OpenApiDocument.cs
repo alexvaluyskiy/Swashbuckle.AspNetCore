@@ -17,14 +17,12 @@ namespace Swashbuckle.AspNetCore.OpenAPIGen.Model
 
         public Components Components { get; set; }
 
-        // TODO: this property is not used
+        // TODO: wrong type
         public object Security { get; set; }
 
-        // TODO: this property is not used
-        public IEnumerable<object> Tags { get; set; }
+        public IEnumerable<Tag> Tags { get; set; }
 
-        // TODO: this property is not used
-        public IEnumerable<object> ExternalDocs { get; set; }
+        public IEnumerable<ExternalDocs> ExternalDocs { get; set; }
     }
 
     public sealed class Server
@@ -47,30 +45,26 @@ namespace Swashbuckle.AspNetCore.OpenAPIGen.Model
 
     public sealed class Components
     {
-        // TODO: this property is not used
         public IDictionary<string, Schema> Schemas { get; set; }
 
-        // TODO: this property is not used
         public IDictionary<string, Response> Responses { get; set; }
 
-        // TODO: this property is not used
         public IDictionary<string, Parameter> Parameters { get; set; }
 
-        // TODO: this property is not used
+        // TODO: wrong type
         public IDictionary<string, object> Examples { get; set; }
 
-        // TODO: this property is not used
         public IDictionary<string, RequestBody> RequestBodies { get; set; }
 
-        // TODO: this property is not used
+        // TODO: wrong type
         public IDictionary<string, object> Headers { get; set; }
 
         public IDictionary<string, SecurityScheme> SecuritySchemes { get; set; }
 
-        // TODO: this property is not used
+        // TODO: wrong type
         public IDictionary<string, object> Links { get; set; }
 
-        // TODO: this property is not used
+        // TODO: wrong type
         public IDictionary<string, object> Callbacks { get; set; }
     }
 
@@ -101,6 +95,7 @@ namespace Swashbuckle.AspNetCore.OpenAPIGen.Model
 
         public IEnumerable<Server> Servers { get; set; }
 
+        // TODO: wrong type
         public IEnumerable<object> Parameters { get; set; }
     }
 
@@ -112,7 +107,7 @@ namespace Swashbuckle.AspNetCore.OpenAPIGen.Model
 
         public string Description { get; set; }
 
-        public object ExternalDocs { get; set; }
+        public ExternalDocs ExternalDocs { get; set; }
 
         public string OperationId { get; set; }
 
@@ -122,6 +117,7 @@ namespace Swashbuckle.AspNetCore.OpenAPIGen.Model
 
         public IDictionary<string, Response> Responses { get; set; }
 
+        // TODO: wrong type
         public IDictionary<string, object> Callbacks { get; set; }
 
         public bool? Deprecated { get; set; }
@@ -131,6 +127,13 @@ namespace Swashbuckle.AspNetCore.OpenAPIGen.Model
         public IEnumerable<Server> Servers { get; set; }
     }
 
+    public sealed class ExternalDocs
+    {
+        public string Description { get; set; }
+
+        public string Url { get; set; }
+    }
+
     public sealed class Parameter
     {
         public string Name { get; set; }
@@ -138,34 +141,27 @@ namespace Swashbuckle.AspNetCore.OpenAPIGen.Model
         [JsonConverter(typeof(StringEnumConverter), true)]
         public ParameterLocation In { get; set; }
 
-        // TODO: take it from Xml documentation
         public string Description { get; set; }
 
         public bool Required { get; set; }
 
-        // TODO: this property is not used
         public bool? Deprecated { get; set; }
 
-        // TODO: this property is not used
         public bool? AllowEmptyValue { get; set; }
 
         public string Style { get; set; }
 
         public bool? Explode { get; set; }
 
-        // TODO: this property is not used
         public bool? AllowReserved { get; set; }
 
         public Schema Schema { get; set; }
 
-        // TODO: this property is not used
         public object Example { get; set; }
 
-        // TODO: this property is not used
-        public IDictionary<string, object> Examples { get; set; }
+        public IDictionary<string, Example> Examples { get; set; }
 
-        // TODO: this property is not used
-        public IDictionary<string, object> Content { get; set; }
+        public IDictionary<string, MediaType> Content { get; set; }
     }
 
     public enum ParameterLocation
@@ -191,21 +187,65 @@ namespace Swashbuckle.AspNetCore.OpenAPIGen.Model
 
         public object Example { get; set; }
 
-        public IDictionary<string, object> Examples { get; set; }
+        public IDictionary<string, Example> Examples { get; set; }
 
-        public IDictionary<string, object> Encoding { get; set; }
+        public IDictionary<string, Encoding> Encoding { get; set; }
+    }
+
+    public sealed class Encoding
+    {
+        public string ContentType { get; set; }
+
+        // TODO: wrong type
+        public IDictionary<string, object> Headers { get; set; }
+
+        public string Style { get; set; }
+
+        public bool Explode { get; set; }
+
+        public bool AllowReserved { get; set; }
     }
 
     public sealed class Response
     {
         public string Description { get; set; }
 
+        // TODO: wrong type
         public IDictionary<string, object> Headers { get; set; }
 
-        public IDictionary<string, object> Content { get; set; }
+        public IDictionary<string, MediaType> Content { get; set; }
 
+        // TODO: wrong type
         public IDictionary<string, object> Links { get; set; }
     }
+
+    // TODO: callback
+
+    public sealed class Example
+    {
+        public string Summary { get; set; }
+
+        public string Description { get; set; }
+
+        public object Value { get; set; }
+
+        public string ExternalValue { get; set; }
+    }
+
+    // TODO: Link
+
+    // TODO: Header
+
+    public sealed class Tag
+    {
+        public string Name { get; set; }
+
+        public string Description { get; set; }
+
+        public ExternalDocs ExternalDocs { get; set; }
+    }
+
+    // TODO: Reference
 
     public sealed class Schema
     {
@@ -276,10 +316,12 @@ namespace Swashbuckle.AspNetCore.OpenAPIGen.Model
 
         public object Xml { get; set; }
 
-        public object ExternalDocs { get; set; }
+        public ExternalDocs ExternalDocs { get; set; }
 
         public object Example { get; set; }
 
         public bool? Deprecated { get; set; }
     }
+
+    // TODO: discriminator
 }
