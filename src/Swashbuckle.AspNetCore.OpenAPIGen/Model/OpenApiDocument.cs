@@ -138,7 +138,7 @@ namespace Swashbuckle.AspNetCore.OpenAPIGen.Model
         [JsonConverter(typeof(StringEnumConverter), true)]
         public ParameterLocation In { get; set; }
 
-        // TODO: this property is not used
+        // TODO: take it from Xml documentation
         public string Description { get; set; }
 
         public bool Required { get; set; }
@@ -156,7 +156,7 @@ namespace Swashbuckle.AspNetCore.OpenAPIGen.Model
         // TODO: this property is not used
         public bool? AllowReserved { get; set; }
 
-        public object Schema { get; set; }
+        public Schema Schema { get; set; }
 
         // TODO: this property is not used
         public object Example { get; set; }

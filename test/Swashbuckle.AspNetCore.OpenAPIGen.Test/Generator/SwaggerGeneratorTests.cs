@@ -149,15 +149,13 @@ namespace Swashbuckle.AspNetCore.OpenAPIGen.Test
         }
 
         [Theory]
-        [InlineData("collection/{param}", nameof(FakeActions.AcceptsStringFromRoute), ParameterLocation.Path, "simple", false)]
-        [InlineData("collection", nameof(FakeActions.AcceptsStringFromQuery), ParameterLocation.Query, "form", true)]
-        [InlineData("collection", nameof(FakeActions.AcceptsStringFromHeader), ParameterLocation.Header, "simple", false)]
+        [InlineData("collection/{param}", nameof(FakeActions.AcceptsStringFromRoute), ParameterLocation.Path)]
+        [InlineData("collection", nameof(FakeActions.AcceptsStringFromQuery), ParameterLocation.Query)]
+        [InlineData("collection", nameof(FakeActions.AcceptsStringFromHeader), ParameterLocation.Header)]
         public void GetSwagger_GeneratesParameters_ForPathQueryHeaderParams(
             string routeTemplate,
             string actionFixtureName,
-            ParameterLocation expectedIn,
-            string style,
-            bool isExplode)
+            ParameterLocation expectedIn)
         {
             var subject = Subject(setupApis: apis => apis.Add("GET", routeTemplate, actionFixtureName));
 
@@ -168,21 +166,22 @@ namespace Swashbuckle.AspNetCore.OpenAPIGen.Test
             Assert.NotNull(param);
             Assert.Equal("param", param.Name);
             Assert.Equal(expectedIn, param.In);
-            Assert.Equal(style, param.Style);
-            Assert.Equal(isExplode, param.Explode);
+            Assert.Equal(null, param.Style);
+            Assert.Equal(null, param.Explode);
         }
 
-        //[Fact]
-        //public void GetSwagger_SetsCollectionFormatMulti_ForQueryOrHeaderBoundArrayParams()
-        //{
-        //    var subject = Subject(setupApis: apis => apis
-        //        .Add("GET", "resource", nameof(FakeActions.AcceptsArrayFromQuery)));
+        [Fact]
+        public void GetSwagger_SetsStyleFormAndExplodeTrue_ForQueryOrHeaderBoundArrayParams()
+        {
+            var subject = Subject(setupApis: apis => apis
+                .Add("GET", "resource", nameof(FakeActions.AcceptsArrayFromQuery)));
 
-        //    var swagger = subject.GetSwagger("v1");
+            var swagger = subject.GetSwagger("v1");
 
-        //    var param = (NonBodyParameter)swagger.Paths["/resource"].Get.Parameters.First();
-        //    Assert.Equal("multi", param.CollectionFormat);
-        //}
+            var param = swagger.Paths["/resource"].Get.Parameters.First();
+            Assert.Equal("form", param.Style);
+            Assert.Equal(true, param.Explode);
+        }
 
         //[Fact]
         //public void GetSwagger_GeneratesBodyParams_ForBodyBoundParams()
@@ -275,7 +274,6 @@ namespace Swashbuckle.AspNetCore.OpenAPIGen.Test
             Assert.IsAssignableFrom<Parameter>(param);
             Assert.Equal("param", param.Name);
             Assert.Equal(ParameterLocation.Path, param.In);
-            Assert.Equal("simple", param.Style);
         }
 
         [Fact]

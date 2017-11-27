@@ -64,14 +64,14 @@ namespace Swashbuckle.AspNetCore.SwaggerGen
                 Paths = paths,
             };
 
-            //var filterContext = new DocumentFilterContext(
-            //    _apiDescriptionsProvider.ApiDescriptionGroups,
-            //    schemaRegistry);
+            var filterContext = new DocumentFilterContext(
+                _apiDescriptionsProvider.ApiDescriptionGroups,
+                schemaRegistry);
 
-            //foreach (var filter in _settings.DocumentFilters)
-            //{
-            //    filter.Apply(swaggerDoc, filterContext);
-            //}
+            foreach (var filter in _settings.DocumentFilters)
+            {
+                filter.Apply(swaggerDoc, filterContext);
+            }
 
             return swaggerDoc;
         }
@@ -209,38 +209,27 @@ namespace Swashbuckle.AspNetCore.SwaggerGen
             }
 
             var location = GetParameterLocation(paramDescription);
-            var style = GetStyle(location);
 
             var name = _settings.DescribeAllParametersInCamelCase
                 ? paramDescription.Name.ToCamelCase()
                 : paramDescription.Name;
-
-            var schema = (paramDescription.Type == null) ? null : schemaRegistry.GetOrRegister(paramDescription.Type);
-            //if (location == "body")
-            //{
-            //    return new Parameter
-            //    {
-            //        Name = name,
-            //        In = "body"
-            //    };
-            //}
 
             var parameter = new Parameter
             {
                 Name = name,
                 In = location,
                 Required = (location == ParameterLocation.Path) || paramDescription.IsRequired(),
-                Style = GetStyle(location),
-                Explode = style == "form"
             };
 
-            //if (schema == null)
-            //    nonBodyParam.Type = "string";
-            //else
-            //    nonBodyParam.PopulateFrom(schema);
+            var schema = (paramDescription.Type == null) ? null : schemaRegistry.GetOrRegister(paramDescription.Type);
+            if (schema != null && (schema.Type == "object" || schema.Type == "array"))
+            {
+                var style = GetStyle(location);
+                parameter.Style = GetStyle(location);
+                parameter.Explode = style == "form";
+            }
 
-            //if (nonBodyParam.Type == "array")
-            //    nonBodyParam.CollectionFormat = "multi";
+            parameter.Schema = schema;
 
             return parameter;
         }

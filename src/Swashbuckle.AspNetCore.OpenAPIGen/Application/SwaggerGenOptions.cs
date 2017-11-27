@@ -19,8 +19,8 @@ namespace Swashbuckle.AspNetCore.SwaggerGen
         private readonly SchemaRegistrySettings _schemaRegistrySettings;
 
         private IList<Func<XPathDocument>> _xmlDocFactories;
-        //private List<FilterDescriptor<IOperationFilter>> _operationFilterDescriptors;
-        //private List<FilterDescriptor<IDocumentFilter>> _documentFilterDescriptors;
+        private List<FilterDescriptor<IOperationFilter>> _operationFilterDescriptors;
+        private List<FilterDescriptor<IDocumentFilter>> _documentFilterDescriptors;
         private List<FilterDescriptor<ISchemaFilter>> _schemaFilterDescriptors;
 
         private struct FilterDescriptor<TFilter>
@@ -35,14 +35,14 @@ namespace Swashbuckle.AspNetCore.SwaggerGen
             _schemaRegistrySettings = new SchemaRegistrySettings();
 
             _xmlDocFactories = new List<Func<XPathDocument>>();
-            //_operationFilterDescriptors = new List<FilterDescriptor<IOperationFilter>>();
-            //_documentFilterDescriptors = new List<FilterDescriptor<IDocumentFilter>>();
+            _operationFilterDescriptors = new List<FilterDescriptor<IOperationFilter>>();
+            _documentFilterDescriptors = new List<FilterDescriptor<IDocumentFilter>>();
             _schemaFilterDescriptors = new List<FilterDescriptor<ISchemaFilter>>();
 
             // Enable Annotations
-            //OperationFilter<SwaggerAttributesOperationFilter>();
-            //OperationFilter<SwaggerResponseAttributeFilter>();
-            //SchemaFilter<SwaggerAttributesSchemaFilter>();
+            OperationFilter<SwaggerAttributesOperationFilter>();
+            OperationFilter<SwaggerResponseAttributeFilter>();
+            SchemaFilter<SwaggerAttributesSchemaFilter>();
         }
 
         /// <summary>
@@ -117,36 +117,36 @@ namespace Swashbuckle.AspNetCore.SwaggerGen
         /// </summary>
         /// <param name="type">System type</param>
         /// <param name="schemaFactory">A factory method that generates Schema's for the provided type</param>
-        //public void MapType(Type type, Func<Schema> schemaFactory)
-        //{
-        //    _schemaRegistrySettings.CustomTypeMappings.Add(type, schemaFactory);
-        //}
+        public void MapType(Type type, Func<Schema> schemaFactory)
+        {
+            _schemaRegistrySettings.CustomTypeMappings.Add(type, schemaFactory);
+        }
 
         /// <summary>
         /// Provide a custom mapping, for a given type, to the Swagger-flavored JSONSchema
         /// </summary>
         /// <typeparam name="T">System type</typeparam>
         /// <param name="schemaFactory">A factory method that generates Schema's for the provided type</param>
-        //public void MapType<T>(Func<Schema> schemaFactory)
-        //{
-        //    MapType(typeof(T), schemaFactory);
-        //}
+        public void MapType<T>(Func<Schema> schemaFactory)
+        {
+            MapType(typeof(T), schemaFactory);
+        }
 
         /// <summary>
         /// Use the enum names, as opposed to their integer values, when describing enum types
         /// </summary>
-        //public void DescribeAllEnumsAsStrings()
-        //{
-        //    _schemaRegistrySettings.DescribeAllEnumsAsStrings = true;
-        //}
+        public void DescribeAllEnumsAsStrings()
+        {
+            _schemaRegistrySettings.DescribeAllEnumsAsStrings = true;
+        }
 
         /// <summary>
         /// If applicable, describe all enum names, regardless of how they appear in code, in camelCase.
         /// </summary>
-        //public void DescribeStringEnumsInCamelCase()
-        //{
-        //    _schemaRegistrySettings.DescribeStringEnumsInCamelCase = true;
-        //}
+        public void DescribeStringEnumsInCamelCase()
+        {
+            _schemaRegistrySettings.DescribeStringEnumsInCamelCase = true;
+        }
 
         /// <summary>
         /// Provide a custom strategy for generating the unique Id's that are used to reference object Schema's
@@ -154,63 +154,63 @@ namespace Swashbuckle.AspNetCore.SwaggerGen
         /// <param name="schemaIdSelector">
         /// A lambda that returns a unique identifier for the provided system type
         /// </param>
-        //public void CustomSchemaIds(Func<Type, string> schemaIdSelector)
-        //{
-        //    _schemaRegistrySettings.SchemaIdSelector = schemaIdSelector;
-        //}
+        public void CustomSchemaIds(Func<Type, string> schemaIdSelector)
+        {
+            _schemaRegistrySettings.SchemaIdSelector = schemaIdSelector;
+        }
 
         /// <summary>
         /// Ignore any properties that are decorated with the ObsoleteAttribute
         /// </summary>
-        //public void IgnoreObsoleteProperties()
-        //{
-        //    _schemaRegistrySettings.IgnoreObsoleteProperties = true;
-        //}
+        public void IgnoreObsoleteProperties()
+        {
+            _schemaRegistrySettings.IgnoreObsoleteProperties = true;
+        }
 
         /// <summary>
         /// Extend the Swagger Generator with "filters" that can modify Operations after they're initially generated
         /// </summary>
         /// <typeparam name="TFilter">A type that derives from IOperationFilter</typeparam>
         /// <param name="parameters">Optionally inject parameters through filter constructors</param>
-        //public void OperationFilter<TFilter>(params object[] parameters)
-        //    where TFilter : IOperationFilter
-        //{
-        //    _operationFilterDescriptors.Add(new FilterDescriptor<IOperationFilter>
-        //    {
-        //        Type = typeof(TFilter),
-        //        Arguments = parameters
-        //    });
-        //}
+        public void OperationFilter<TFilter>(params object[] parameters)
+            where TFilter : IOperationFilter
+        {
+            _operationFilterDescriptors.Add(new FilterDescriptor<IOperationFilter>
+            {
+                Type = typeof(TFilter),
+                Arguments = parameters
+            });
+        }
 
         /// <summary>
         /// Extend the Swagger Generator with "filters" that can modify SwaggerDocuments after they're initially generated
         /// </summary>
         /// <typeparam name="TFilter">A type that derives from IDocumentFilter</typeparam>
         /// <param name="parameters">Optionally inject parameters through filter constructors</param>
-        //public void DocumentFilter<TFilter>(params object[] parameters)
-        //    where TFilter : IDocumentFilter
-        //{
-        //    _documentFilterDescriptors.Add(new FilterDescriptor<IDocumentFilter>
-        //    {
-        //        Type = typeof(TFilter),
-        //        Arguments = parameters
-        //    });
-        //}
+        public void DocumentFilter<TFilter>(params object[] parameters)
+            where TFilter : IDocumentFilter
+        {
+            _documentFilterDescriptors.Add(new FilterDescriptor<IDocumentFilter>
+            {
+                Type = typeof(TFilter),
+                Arguments = parameters
+            });
+        }
 
         /// <summary>
         /// Extend the Swagger Generator with "filters" that can modify Schemas after they're initially generated
         /// </summary>
         /// <typeparam name="TFilter">A type that derives from ISchemaFilter</typeparam>
         /// <param name="parameters">Optionally inject parameters through filter constructors</param>
-        //public void SchemaFilter<TFilter>(params object[] parameters)
-        //    where TFilter : ISchemaFilter
-        //{
-        //    _schemaFilterDescriptors.Add(new FilterDescriptor<ISchemaFilter>
-        //    {
-        //        Type = typeof(TFilter),
-        //        Arguments = parameters
-        //    });
-        //}
+        public void SchemaFilter<TFilter>(params object[] parameters)
+            where TFilter : ISchemaFilter
+        {
+            _schemaFilterDescriptors.Add(new FilterDescriptor<ISchemaFilter>
+            {
+                Type = typeof(TFilter),
+                Arguments = parameters
+            });
+        }
 
         /// <summary>
         /// Inject human-friendly descriptions for Operations, Parameters and Schemas based on XML Comment files
@@ -237,12 +237,12 @@ namespace Swashbuckle.AspNetCore.SwaggerGen
 
             // Instantiate & add the XML comments filters here so they're executed before any custom
             // filters AND so they can share the same XPathDocument (perf. optimization)
-            //foreach (var xmlDocFactory in _xmlDocFactories)
-            //{
-            //    var xmlDoc = xmlDocFactory();
-            //    swaggerGeneratorSettings.OperationFilters.Insert(0, new XmlCommentsOperationFilter(xmlDoc));
-            //    schemaRegistrySettings.SchemaFilters.Insert(0, new XmlCommentsSchemaFilter(xmlDoc));
-            //}
+            foreach (var xmlDocFactory in _xmlDocFactories)
+            {
+                var xmlDoc = xmlDocFactory();
+                swaggerGeneratorSettings.OperationFilters.Insert(0, new XmlCommentsOperationFilter(xmlDoc));
+                schemaRegistrySettings.SchemaFilters.Insert(0, new XmlCommentsSchemaFilter(xmlDoc));
+            }
 
             var schemaRegistryFactory = new SchemaRegistryFactory(
                 serviceProvider.GetRequiredService<IOptions<MvcJsonOptions>>().Value.SerializerSettings,
@@ -272,15 +272,15 @@ namespace Swashbuckle.AspNetCore.SwaggerGen
         {
             var settings = _swaggerGeneratorSettings.Clone();
 
-            //foreach (var filter in CreateFilters(_operationFilterDescriptors, serviceProvider))
-            //{
-            //    settings.OperationFilters.Add(filter);
-            //}
+            foreach (var filter in CreateFilters(_operationFilterDescriptors, serviceProvider))
+            {
+                settings.OperationFilters.Add(filter);
+            }
 
-            //foreach (var filter in CreateFilters(_documentFilterDescriptors, serviceProvider))
-            //{
-            //    settings.DocumentFilters.Add(filter);
-            //}
+            foreach (var filter in CreateFilters(_documentFilterDescriptors, serviceProvider))
+            {
+                settings.DocumentFilters.Add(filter);
+            }
 
             return settings;
         }
