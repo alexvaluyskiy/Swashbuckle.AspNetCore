@@ -484,23 +484,6 @@ namespace Swashbuckle.AspNetCore.OpenAPIGen.Test
         }
 
         [Fact]
-        public void GetSwagger_TagsActions_AsSpecifiedBySettings()
-        {
-            var subject = Subject(
-                setupApis: apis =>
-                {
-                    apis.Add("GET", "collection1", nameof(FakeActions.ReturnsEnumerable));
-                    apis.Add("GET", "collection2", nameof(FakeActions.ReturnsInt));
-                },
-                configure: c => c.TagSelector = (apiDesc) => apiDesc.RelativePath);
-
-            var swagger = subject.GetSwagger("v1");
-
-            Assert.Equal(new[] { "collection1" }, swagger.Paths["/collection1"].Get.Tags);
-            Assert.Equal(new[] { "collection2" }, swagger.Paths["/collection2"].Get.Tags);
-        }
-
-        [Fact]
         public void GetSwagger_OrdersActions_AsSpecifiedBySettings()
         {
             var subject = Subject(
