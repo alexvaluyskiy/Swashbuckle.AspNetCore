@@ -143,10 +143,12 @@ namespace Swashbuckle.AspNetCore.SwaggerGen
         private Operation CreateOperation(ApiDescription apiDescription, ISchemaRegistry schemaRegistry)
         {
             var parameters = apiDescription.ParameterDescriptions
-                .Where(paramDesc => paramDesc.Source != BindingSource.Body || paramDesc.Source != BindingSource.Form)
+                .Where(paramDesc => paramDesc.Source != BindingSource.Body && paramDesc.Source != BindingSource.Form)
                 .Where(paramDesc => paramDesc.Source.IsFromRequest && !paramDesc.IsPartOfCancellationToken())
                 .Select(paramDesc => CreateParameter(apiDescription, paramDesc, schemaRegistry))
                 .ToList();
+
+            var requestBody = CreateRequestBody(apiDescription, schemaRegistry);
 
             var responses = apiDescription.SupportedResponseTypes
                 .DefaultIfEmpty(new ApiResponseType { StatusCode = 200 })
@@ -160,6 +162,7 @@ namespace Swashbuckle.AspNetCore.SwaggerGen
                 Tags = new[] { _settings.TagSelector(apiDescription) },
                 OperationId = apiDescription.FriendlyId(),
                 Parameters = parameters.Any() ? parameters : null, // parameters can be null but not empty
+                RequestBody = requestBody,
                 Responses = responses,
                 Deprecated = apiDescription.IsObsolete() ? true : (bool?)null
             };
@@ -171,6 +174,32 @@ namespace Swashbuckle.AspNetCore.SwaggerGen
             }
 
             return operation;
+        }
+
+        private RequestBody CreateRequestBody(ApiDescription apiDescription, ISchemaRegistry schemaRegistry)
+        {
+            var bodyParameter = apiDescription.ParameterDescriptions
+                .FirstOrDefault(paramDesc => paramDesc.Source == BindingSource.Body || paramDesc.Source == BindingSource.Form);
+
+            if (bodyParameter == null)
+                return null;
+
+            var content = apiDescription.SupportedRequestFormats.ToDictionary(
+                apiResponseType => apiResponseType.MediaType,
+                apiResponseType => new MediaType()
+                {
+                    Schema = (bodyParameter.Type != null && bodyParameter.Type != typeof(void))
+                        ? schemaRegistry.GetOrRegister(bodyParameter.Type)
+                        : null
+                }
+            );
+
+            var requestBody = new RequestBody
+            {
+                Content = content
+            };
+
+            return requestBody;
         }
 
         private Parameter CreateParameter(
@@ -234,18 +263,26 @@ namespace Swashbuckle.AspNetCore.SwaggerGen
             return parameter;
         }
 
-        private Response CreateResponse(ApiResponseType apiResponseType, object schemaRegistry)
+        private Response CreateResponse(ApiResponseType apiResponseType, ISchemaRegistry schemaRegistry)
         {
             var description = ResponseDescriptionMap
                 .FirstOrDefault((entry) => Regex.IsMatch(apiResponseType.StatusCode.ToString(), entry.Key))
                 .Value;
 
+            var content = apiResponseType.ApiResponseFormats.ToDictionary(
+                resp => resp.MediaType,
+                resp => new MediaType
+                {
+                    Schema = (apiResponseType.Type != null && apiResponseType.Type != typeof(void))
+                        ? schemaRegistry.GetOrRegister(apiResponseType.Type)
+                        : null
+                }
+            );
+
             return new Response
             {
                 Description = description,
-                //Schema = (apiResponseType.Type != null && apiResponseType.Type != typeof(void))
-                //    ? schemaRegistry.GetOrRegister(apiResponseType.Type)
-                //    : null
+                Content = content
             };
         }
 

@@ -51,18 +51,15 @@ namespace Swashbuckle.AspNetCore.OpenAPIGen.Model
 
         public IDictionary<string, Parameter> Parameters { get; set; }
 
-        // TODO: wrong type
-        public IDictionary<string, object> Examples { get; set; }
+        public IDictionary<string, Example> Examples { get; set; }
 
         public IDictionary<string, RequestBody> RequestBodies { get; set; }
 
-        // TODO: wrong type
-        public IDictionary<string, object> Headers { get; set; }
+        public IDictionary<string, Header> Headers { get; set; }
 
         public IDictionary<string, SecurityScheme> SecuritySchemes { get; set; }
 
-        // TODO: wrong type
-        public IDictionary<string, object> Links { get; set; }
+        public IDictionary<string, Link> Links { get; set; }
 
         // TODO: wrong type
         public IDictionary<string, object> Callbacks { get; set; }
@@ -95,8 +92,7 @@ namespace Swashbuckle.AspNetCore.OpenAPIGen.Model
 
         public IEnumerable<Server> Servers { get; set; }
 
-        // TODO: wrong type
-        public IEnumerable<object> Parameters { get; set; }
+        public IEnumerable<Parameter> Parameters { get; set; }
     }
 
     public sealed class Operation
@@ -134,7 +130,7 @@ namespace Swashbuckle.AspNetCore.OpenAPIGen.Model
         public string Url { get; set; }
     }
 
-    public sealed class Parameter
+    public class Parameter
     {
         public string Name { get; set; }
 
@@ -169,7 +165,7 @@ namespace Swashbuckle.AspNetCore.OpenAPIGen.Model
         Path,
         Query,
         Header,
-        Cookie // Not supported by API Explorer
+        Cookie
     }
 
     public sealed class RequestBody
@@ -196,8 +192,7 @@ namespace Swashbuckle.AspNetCore.OpenAPIGen.Model
     {
         public string ContentType { get; set; }
 
-        // TODO: wrong type
-        public IDictionary<string, object> Headers { get; set; }
+        public IDictionary<string, Header> Headers { get; set; }
 
         public string Style { get; set; }
 
@@ -210,16 +205,14 @@ namespace Swashbuckle.AspNetCore.OpenAPIGen.Model
     {
         public string Description { get; set; }
 
-        // TODO: wrong type
-        public IDictionary<string, object> Headers { get; set; }
+        public IDictionary<string, Header> Headers { get; set; }
 
         public IDictionary<string, MediaType> Content { get; set; }
 
-        // TODO: wrong type
-        public IDictionary<string, object> Links { get; set; }
+        public IDictionary<string, Link> Links { get; set; }
     }
 
-    // TODO: callback
+    // TODO: Callback
 
     public sealed class Example
     {
@@ -232,9 +225,24 @@ namespace Swashbuckle.AspNetCore.OpenAPIGen.Model
         public string ExternalValue { get; set; }
     }
 
-    // TODO: Link
+    public sealed class Link
+    {
+        public string OperationRef { get; set; }
 
-    // TODO: Header
+        public string OperationId { get; set; }
+
+        public IDictionary<string, object> Parameters { get; set; }
+
+        public object RequestBody { get; set; }
+
+        public string Description { get; set; }
+
+        public Server Server { get; set; }
+    }
+
+    public sealed class Header : Parameter
+    {
+    }
 
     public sealed class Tag
     {

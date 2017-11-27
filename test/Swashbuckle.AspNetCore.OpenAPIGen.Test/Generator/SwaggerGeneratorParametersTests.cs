@@ -40,6 +40,7 @@ namespace Swashbuckle.AspNetCore.OpenAPIGen.Test
             Assert.NotNull(param);
             Assert.Equal("param", param.Name);
             Assert.Equal(expectedIn, param.In);
+            Assert.Null(swagger.Paths["/" + routeTemplate].Get.RequestBody);
         }
 
         [Fact]

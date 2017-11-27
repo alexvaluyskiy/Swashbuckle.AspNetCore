@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using Newtonsoft.Json;
 using Swashbuckle.AspNetCore.OpenAPIGen.Model.Info;
 using Xunit;
@@ -8,23 +9,23 @@ namespace Swashbuckle.AspNetCore.OpenAPIGen.Test
 {
     public class SwaggerGeneratorRequestBodiesTests
     {
-        //[Fact]
-        //public void GetSwagger_GeneratesBodyParams_ForBodyBoundParams()
-        //{
-        //    var subject = Subject(setupApis: apis => apis
-        //        .Add("POST", "collection", nameof(FakeActions.AcceptsComplexTypeFromBody)));
+        [Fact]
+        public void GetSwagger_GeneratesBodyParams_ForBodyBoundParams()
+        {
+            var subject = Subject(setupApis: apis => apis
+                .Add("POST", "collection", nameof(FakeActions.AcceptsComplexTypeFromBody)));
 
-        //    var swagger = subject.GetSwagger("v1");
+            var swagger = subject.GetSwagger("v1");
 
-        //    var param = swagger.Paths["/collection"].Post.Parameters.First();
-        //    Assert.IsAssignableFrom<BodyParameter>(param);
-        //    var bodyParam = param as BodyParameter;
-        //    Assert.Equal("param", bodyParam.Name);
-        //    Assert.Equal("body", bodyParam.In);
-        //    Assert.NotNull(bodyParam.Schema);
-        //    Assert.Equal("#/definitions/ComplexType", bodyParam.Schema.Ref);
-        //    Assert.Contains("ComplexType", swagger.Definitions.Keys);
-        //}
+            var operation = swagger.Paths["/collection"].Post;
+            Assert.NotNull(operation);
+            Assert.NotNull(operation.RequestBody);
+            Assert.True(operation.RequestBody.Content.ContainsKey("application/json"));
+            var content = operation.RequestBody.Content["application/json"];
+            Assert.NotNull(content.Schema);
+            Assert.Equal("#/components/schemas/ComplexType", content.Schema.Ref);
+            //Assert.Contains("ComplexType", swagger.Components.Definitions.Keys);
+        }
 
         private SwaggerGenerator Subject(
             Action<FakeApiDescriptionGroupCollectionProvider> setupApis = null,

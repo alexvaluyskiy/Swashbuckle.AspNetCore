@@ -106,6 +106,16 @@ namespace Swashbuckle.AspNetCore.OpenAPIGen.Test
         public void AnnotatedWithXml(int param1, IEnumerable<ComplexType> param2)
         { }
 
+        /// <summary>
+        /// summary for AnnotatedWithXml
+        /// </summary>
+        /// <remarks>
+        /// remarks for AnnotatedWithXml
+        /// </remarks>
+        /// <param name="param">description for parma1</param>
+        public void AnnotatedBodyWithXml([FromBody]ComplexType param)
+        { }
+
         /// <param name="param1">description for parma1</param>
         /// <param name="param2">description for param2</param>
         public void AnnotatedWithXmlHavingParameterNameBindings(

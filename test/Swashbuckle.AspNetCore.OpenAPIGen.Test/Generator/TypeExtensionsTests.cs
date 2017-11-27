@@ -19,10 +19,10 @@ namespace Swashbuckle.AspNetCore.OpenAPIGen.Test
         }
 
         [Theory]
-        [InlineData(typeof(ComplexType), "Swashbuckle.AspNetCore.SwaggerGen.Test.ComplexType")]
+        [InlineData(typeof(ComplexType), "Swashbuckle.AspNetCore.OpenAPIGen.Test.ComplexType")]
         [InlineData(typeof(IEnumerable<string>), "System.Collections.Generic.IEnumerable[System.String]")]
         [InlineData(typeof(IDictionary<string, decimal>), "System.Collections.Generic.IDictionary[System.String,System.Decimal]")]
-        [InlineData(typeof(ContainingType.NestedType), "Swashbuckle.AspNetCore.SwaggerGen.Test.ContainingType.NestedType")]
+        [InlineData(typeof(ContainingType.NestedType), "Swashbuckle.AspNetCore.OpenAPIGen.Test.ContainingType.NestedType")]
         public void FriendlyId_ReturnsFullQualifiedFriendlyId_IfFullyQualifiedFlagIsSet(
             Type systemType,
             string expectedReturnValue)
