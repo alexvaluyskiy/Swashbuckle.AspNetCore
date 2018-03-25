@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json.Linq;
 
@@ -94,6 +95,9 @@ namespace Swashbuckle.AspNetCore.SwaggerGen.Test
 
         public void AcceptsXmlAnnotatedTypeFromQuery([FromQuery]XmlAnnotatedType param1)
         {}
+
+        public void AcceptsFormFile(IFormFile file)
+        { }
 
         /// <summary>
         /// summary for AnnotatedWithXml

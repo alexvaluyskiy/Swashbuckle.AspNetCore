@@ -601,6 +601,28 @@ namespace Swashbuckle.AspNetCore.SwaggerGen.Test
             Assert.Null(operation.Parameters); // first one has no parameters
         }
 
+        [Fact]
+        public void GetSwagger_SetFileUploadParameter_ForFormFile()
+        {
+            var subject = Subject(setupApis: apis => apis
+                .Add("POST", "collection", nameof(FakeActions.AcceptsFormFile)));
+
+            var swagger = subject.GetSwagger("v1");
+
+            var operation = swagger.Paths["/collection"].Post;
+            Assert.Equal(1, operation.Consumes.Count);
+            Assert.Equal("multipart/form-data", operation.Consumes[0]);
+            Assert.NotNull(operation.Parameters);
+            Assert.Equal(1, operation.Parameters.Count);
+
+            var parameter = operation.Parameters[0] as NonBodyParameter;
+            Assert.NotNull(parameter);
+            Assert.Equal("file", parameter.Name);
+            Assert.Equal("formData", parameter.In);
+            Assert.True(parameter.Required);
+            Assert.Equal("file", parameter.Type);
+        }
+
         private SwaggerGenerator Subject(
             Action<FakeApiDescriptionGroupCollectionProvider> setupApis = null,
             Action<SwaggerGeneratorSettings> configure = null)
