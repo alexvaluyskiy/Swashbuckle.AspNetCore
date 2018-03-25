@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Swashbuckle.AspNetCore.Swagger;
@@ -208,6 +209,11 @@ namespace Swashbuckle.AspNetCore.SwaggerGen
                 nonBodyParam.PopulateFrom(schema);
             }
 
+            if (paramDescription.Source == BindingSource.FormFile && paramDescription.Type == typeof(IFormFile))
+            {
+                nonBodyParam.Type = "file";
+            }
+
             if (nonBodyParam.Type == "array")
                 nonBodyParam.CollectionFormat = "multi";
 
@@ -216,7 +222,7 @@ namespace Swashbuckle.AspNetCore.SwaggerGen
 
         private string GetParameterLocation(ApiDescription apiDescription, ApiParameterDescription paramDescription)
         {
-            if (paramDescription.Source == BindingSource.Form)
+            if (paramDescription.Source == BindingSource.Form || paramDescription.Source == BindingSource.FormFile)
                 return "formData";
             else if (paramDescription.Source == BindingSource.Body)
                 return "body";
